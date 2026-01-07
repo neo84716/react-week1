@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const url = "https://ec-course-api.hexschool.io/v2";
-const apiPath = "scrooge";
+const url = import.meta.env.VITE_API_URL;
+const apiPath = import.meta.env.VITE_API_PATH;
 
 function Products() {
   const [products, setProducts] = useState([]);
@@ -34,7 +34,7 @@ function Products() {
 
 
   async function Logout() {
-    console.log("Logout");
+    // console.log("Logout");
     try {
       document.cookie = "scrooge=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
       axios.defaults.headers.common['Authorization'] = "";

@@ -2,7 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const url = "https://ec-course-api.hexschool.io/v2";
+const url = import.meta.env.VITE_API_URL;
 
 function Home() {
   const [data, setData] = useState({ username: "", password: "" });
