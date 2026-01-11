@@ -4,7 +4,7 @@ import axios from "axios";
 const url = import.meta.env.VITE_API_URL;
 const apiPath = import.meta.env.VITE_API_PATH;
 
-function AddModal({ show, onClose, getProducts, mode = "add", product }) {
+function ProductModal({ show, onClose, getProducts, mode = "add", product }) {
     const [item, setItem] = useState(
         {
             "data": {
@@ -115,7 +115,7 @@ function AddModal({ show, onClose, getProducts, mode = "add", product }) {
                 <div className="modal-dialog">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h5 className="modal-title fw-bold" id="AddModalLabel">新增產品</h5>
+                            <h5 className="modal-title fw-bold" id="ProductModal">{mode === "add" ? "新增產品" : "編輯產品"}</h5>
                             <button type="button" className="btn-close" onClick={onClose}></button>
                         </div>
                         <div className="modal-body">
@@ -225,4 +225,4 @@ function AddModal({ show, onClose, getProducts, mode = "add", product }) {
         </>
     )
 }
-export default AddModal;
+export default ProductModal;

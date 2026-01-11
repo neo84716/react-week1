@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Nav from "../layouts/Nav";
-import AddModal from "../components/AddModal";
+import ProductModal from "../components/ProductModal";
 
 const url = import.meta.env.VITE_API_URL;
 const apiPath = import.meta.env.VITE_API_PATH;
@@ -60,7 +60,7 @@ function Products() {
           <button type="button" className="btn btn-outline-primary" onClick={() => { setMode("add"); setSelectedProduct(null); setShowModal(true); }}>
             新增產品
           </button>
-          <AddModal show={showModal} onClose={() => setShowModal(false)} mode={mode} product={selectedProduct} getProducts={getProducts} />
+          <ProductModal show={showModal} onClose={() => setShowModal(false)} mode={mode} product={selectedProduct} getProducts={getProducts} />
         </div>
         <table className="table table-striped">
           <thead>
