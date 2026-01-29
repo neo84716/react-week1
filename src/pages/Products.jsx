@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Nav from "../layouts/Nav";
 import ProductModal from "../components/ProductModal";
+import Pagination from "../components/Pagination";
 
 const url = import.meta.env.VITE_API_URL;
 const apiPath = import.meta.env.VITE_API_PATH;
@@ -14,11 +15,13 @@ function Products() {
   const [mode, setMode] = useState("add");
   const [selectedProduct, setSelectedProduct] = useState(null);
   const navigate = useNavigate();
+  const [pagination, setPagination] = useState({});
 
-  async function getProducts() {
+  async function getProducts(page = 1) {
     try {
-      const res = await axios.get(`${url}/api/${apiPath}/admin/products/all`);
-      setProducts(Object.values(res.data.products));
+      const res = await axios.get(`${url}/api/${apiPath}/admin/products?page=${page}`);
+      setProducts(res.data.products);
+      setPagination(res.data.pagination);
     } catch (err) {
       console.log(err);
     }
@@ -95,6 +98,7 @@ function Products() {
             ))}
           </tbody>
         </table>
+        <Pagination pagination={pagination} onChangePage={getProducts} />
 
         <h2>單一產品細節</h2>
         {tempProduct ? (
