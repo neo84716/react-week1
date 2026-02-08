@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { RotatingLines } from 'react-loader-spinner'
+
 
 const url = import.meta.env.VITE_API_URL;
 const apiPath = import.meta.env.VITE_API_PATH;
 
 function Products() {
   const [products, setProducts] = useState([]);
-
+  const [loadingCartId, setLoadingCartId] = useState(null);
 
   async function getProducts() {
     try {
@@ -17,33 +19,34 @@ function Products() {
     }
   }
   async function addCartItem(product_id, addQty) {
+    setLoadingCartId(product_id)
+    try {
+      const res = await axios.get(`${url}/api/${apiPath}/cart`);
+      const carts = res.data.data.carts;
 
-    axios.get(`${url}/api/${apiPath}/cart`)
-      .then(function (response) {
-        let carts = response.data.data.carts;
-        console.log(carts);
-        let existingItem = carts.find(item => item.product.id === product_id);
-        let qty = addQty;
-        if (existingItem) {
-          quantity += existingItem.quantity; // 如果已存在，加上現有數量
+      let existingItem = carts.find(item => item.product.id === product_id);
+      let qty = addQty;
+
+      if (existingItem) {
+        qty += existingItem.qty; // 注意這裡要用 qty，不是 quantity
+      }
+
+      const response = await axios.post(`${url}/api/${apiPath}/cart`, {
+        data: {
+          product_id,
+          qty
         }
-
-
-        return axios.post(`${url}/api/${apiPath}/cart`, {
-          data: {
-            product_id,
-            qty
-          }
-        });
-      })
-      .then(function (response) {
-        alert('商品已加入購物車')
-        console.log('加入購物車成功', response.data);
-      })
-      .catch(function (error) {
-        console.error('加入購物車失敗', error);
       });
+
+      alert('商品已加入購物車');
+      console.log('加入購物車成功', response.data);
+    } catch (error) {
+      console.error('加入購物車失敗', error.response?.data || error);
+    } finally {
+      setLoadingCartId(null)
+    }
   }
+
 
   useEffect(() => {
     getProducts();
@@ -81,7 +84,19 @@ function Products() {
                 <p className="card-text fw-bold text-danger">
                   售價：{item.price}
                 </p>
-                <button type="button" className="btn btn-outline-primary" onClick={() => addCartItem(item.id, 1)}>加入購物車</button>
+                <button type="button" className="btn btn-outline-primary d-flex justify-content-center align-items-center" onClick={() => addCartItem(item.id, 1)} disabled={loadingCartId === item.id}>
+                  {loadingCartId === item.id ? <RotatingLines
+                    visible={true}
+                    height="24"
+                    width="24"
+                    color="grey"
+                    strokeWidth="5"
+                    animationDuration="0.75"
+                    ariaLabel="rotating-lines-loading"
+                    wrapperStyle={{}}
+                    wrapperClass=""
+                  /> : "加入購物車"}
+                </button>
               </div>
             </div>
           </div>

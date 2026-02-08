@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { useForm } from "react-hook-form";
+import { RotatingLines } from 'react-loader-spinner'
 
 const url = import.meta.env.VITE_API_URL;
 const apiPath = import.meta.env.VITE_API_PATH;
@@ -7,32 +9,66 @@ const apiPath = import.meta.env.VITE_API_PATH;
 function Cart() {
   const [carts, setCarts] = useState([]);
   const [total, setTotal] = useState(0);
+  const [loadingDeleteId, setLoadingDeleteId] = useState(null);
 
-  async function getCarts() {
+  const { register, handleSubmit, formState: { errors }, reset } = useForm();
+
+  // 取得購物車
+  async function getCart() {
     try {
       const res = await axios.get(`${url}/api/${apiPath}/cart`);
       setCarts(res.data.data.carts);
       setTotal(res.data.data.final_total);
     } catch (err) {
-      console.log(err);
+      console.error("取得購物車失敗", err);
     }
   }
 
-  async function deleteCartItem(id) {
-    const result = window.confirm("確定要刪除這個商品嗎？");
-    if (!result) return;
-
+  // 刪除購物車項目
+  async function deleteCartItem(cartId) {
+    setLoadingDeleteId(cartId)
     try {
-      await axios.delete(`${url}/api/${apiPath}/cart/${id}`);
-      alert("刪除成功");
-      getCarts(); // 重新取得購物車
+      await axios.delete(`${url}/api/${apiPath}/cart/${cartId}`);
+      alert("已刪除商品");
+      getCart();
     } catch (err) {
       console.error("刪除失敗", err);
+    } finally {
+      setLoadingDeleteId(null)
     }
   }
 
+  // 送出訂單
+  async function onSubmit(data) {
+    if (carts.length === 0) {
+      alert("購物車是空的，無法送出訂單！");
+      return;
+    }
+
+    try {
+      const res = await axios.post(`${url}/api/${apiPath}/order`, {
+        data: {
+          user: {
+            name: data.name,
+            email: data.email,
+            tel: data.tel,
+            address: data.address,
+          },
+          message: data.message,
+        }
+      });
+      alert("訂單已送出！");
+      console.log("訂單成功", res.data);
+      reset(); // 清空表單
+      getCart(); // 重新載入購物車（通常會變空）
+    } catch (err) {
+      console.error("訂單送出失敗", err.response?.data || err);
+    }
+  }
+
+
   useEffect(() => {
-    getCarts();
+    getCart();
   }, []);
 
   return (
@@ -75,10 +111,20 @@ function Cart() {
                   <td className="fw-bold text-danger">{item.final_total}</td>
                   <td>
                     <button
-                      className="btn btn-outline-danger btn-sm"
-                      onClick={() => deleteCartItem(item.id)}
+                      className="btn btn-outline-danger btn-sm d-flex justify-content-center align-items-center"
+                      onClick={() => deleteCartItem(item.id)} disabled={loadingDeleteId === item.id}
                     >
-                      刪除
+                      {loadingDeleteId === item.id ? <RotatingLines
+                        visible={true}
+                        height="24"
+                        width="24"
+                        color="grey"
+                        strokeWidth="5"
+                        animationDuration="0.75"
+                        ariaLabel="rotating-lines-loading"
+                        wrapperStyle={{}}
+                        wrapperClass=""
+                      /> : "刪除"}
                     </button>
                   </td>
                 </tr>
@@ -93,6 +139,81 @@ function Cart() {
           </div>
         </>
       )}
+
+      {/* 表單資料 */}
+      <div className="my-5 row justify-content-center">
+        <form onSubmit={handleSubmit(onSubmit)} className="col-md-6">
+          <div className="mb-3">
+            <label htmlFor="name" className="form-label">收件人姓名</label>
+            <input
+              id="name"
+              type="text"
+              className="form-control"
+              placeholder="請輸入姓名"
+              {...register("name", { required: "請輸入收件人姓名。" })}
+            />
+            {errors.name && <p className="text-danger">{errors.name.message}</p>}
+          </div>
+
+          <div className="mb-3">
+            <label htmlFor="email" className="form-label">Email</label>
+            <input
+              id="email"
+              type="email"
+              className="form-control"
+              placeholder="請輸入 Email"
+              {...register("email", {
+                required: "請輸入 Email。",
+                pattern: { value: /^\S+@\S+$/i, message: "Email 格式不正確。" },
+              })}
+            />
+            {errors.email && <p className="text-danger">{errors.email.message}</p>}
+          </div>
+
+          <div className="mb-3">
+            <label htmlFor="tel" className="form-label">收件人電話</label>
+            <input
+              id="tel"
+              type="tel"
+              className="form-control"
+              placeholder="請輸入電話"
+              {...register("tel", {
+                required: "請輸入收件人電話。",
+                minLength: { value: 8, message: "電話號碼至少需要 8 碼。" },
+                pattern: { value: /^\d+$/, message: "電話號碼格式不正確，僅限數字。" },
+              })}
+            />
+            {errors.tel && <p className="text-danger">{errors.tel.message}</p>}
+          </div>
+
+          <div className="mb-3">
+            <label htmlFor="address" className="form-label">收件人地址</label>
+            <input
+              id="address"
+              type="text"
+              className="form-control"
+              placeholder="請輸入地址"
+              {...register("address", { required: "請輸入收件人地址。" })}
+            />
+            {errors.address && <p className="text-danger">{errors.address.message}</p>}
+          </div>
+
+          <div className="mb-3">
+            <label htmlFor="message" className="form-label">留言</label>
+            <textarea
+              id="message"
+              className="form-control"
+              placeholder="留言"
+              rows="3"
+              {...register("message")}
+            />
+          </div>
+
+          <div className="text-end">
+            <button type="submit" className="btn btn-danger">送出訂單</button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

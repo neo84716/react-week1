@@ -9,9 +9,7 @@ function App() {
       <Nav />
 
       {/* 子路由渲染區 */}
-      <div className="container mt-4">
-        <Outlet />
-      </div>
+      <Outlet />
     </div>
   );
 }
