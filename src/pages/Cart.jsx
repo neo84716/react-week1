@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useForm } from "react-hook-form";
 import { RotatingLines } from 'react-loader-spinner'
+import useMessage from "../hooks/useMessage";
 
 const url = import.meta.env.VITE_API_URL;
 const apiPath = import.meta.env.VITE_API_PATH;
@@ -10,7 +11,7 @@ function Cart() {
   const [carts, setCarts] = useState([]);
   const [total, setTotal] = useState(0);
   const [loadingDeleteId, setLoadingDeleteId] = useState(null);
-
+  const {showError , showSuccess} = useMessage();
   const { register, handleSubmit, formState: { errors }, reset } = useForm();
 
   // 取得購物車
@@ -21,6 +22,7 @@ function Cart() {
       setTotal(res.data.data.final_total);
     } catch (err) {
       console.error("取得購物車失敗", err);
+      showError(err.response.data.message)
     }
   }
 
@@ -29,10 +31,11 @@ function Cart() {
     setLoadingDeleteId(cartId)
     try {
       await axios.delete(`${url}/api/${apiPath}/cart/${cartId}`);
-      alert("已刪除商品");
+      showSuccess('已刪除商品')
       getCart();
     } catch (err) {
       console.error("刪除失敗", err);
+      showError(err.response.data.message)
     } finally {
       setLoadingDeleteId(null)
     }
@@ -57,12 +60,13 @@ function Cart() {
           message: data.message,
         }
       });
-      alert("訂單已送出！");
+      showSuccess('訂單已送出！')
       console.log("訂單成功", res.data);
       reset(); // 清空表單
       getCart(); // 重新載入購物車（通常會變空）
     } catch (err) {
       console.error("訂單送出失敗", err.response?.data || err);
+      showError(err.response.data.message)
     }
   }
 

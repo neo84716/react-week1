@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import useMessage from "../hooks/useMessage";
 
 const url = import.meta.env.VITE_API_URL;
 const apiPath = import.meta.env.VITE_API_PATH;
@@ -49,6 +50,7 @@ function ProductModal({ show, onClose, getProducts, mode = "add", product }) {
             }
         }
     }, [show, mode, product]);
+    const {showError , showSuccess} = useMessage();
 
     function eventHandle(e) {
         const { name, type, checked, value } = e.target;
@@ -93,16 +95,19 @@ function ProductModal({ show, onClose, getProducts, mode = "add", product }) {
     async function handleSubmit() {
         try {
             if (mode === "add") {
-                await axios.post(`${url}/api/${apiPath}/admin/product`, item);
-                alert(`新增產品 "${item.data.title}" 成功`);
+                const response = await axios.post(`${url}/api/${apiPath}/admin/product`, item);
+                showSuccess('新增成功')
+                onClose();
             } else {
-                await axios.put(`${url}/api/${apiPath}/admin/product/${item.data.id}`, item);
-                alert(`更新產品 "${item.data.title}" 成功`);
+                const response = await axios.put(`${url}/api/${apiPath}/admin/product/${item.data.id}`, item);
+                showSuccess('更新成功')
+                onClose();
             }
             await getProducts();
-            onClose();
+            
         } catch (err) {
             console.error("操作失敗", err);
+            showError(err.response.data.message)
         }
     }
 

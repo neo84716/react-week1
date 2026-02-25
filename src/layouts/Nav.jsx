@@ -26,17 +26,21 @@ function Nav() {
 
         <div className="collapse navbar-collapse">
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-            {/* 前台區塊：永遠顯示 */}
-            <li className="nav-item">
-              <span className="nav-link disabled fw-bold text-primary">前台</span>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/products">產品列表</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/cart">購物車</Link>
-            </li>
-
+            {/* 前台區塊：只有未登入時顯示 */}
+            {!isLoggedIn && (
+              <>
+                <li className="nav-item">
+                  <span className="nav-link disabled fw-bold text-primary">前台</span>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/products">產品列表</Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/cart">購物車</Link>
+                </li>
+                <li><hr className="dropdown-divider" /></li>
+              </>
+            )}
             <li><hr className="dropdown-divider" /></li>
 
             {/* 後台區塊：只有登入後才顯示 */}

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { RotatingLines } from 'react-loader-spinner'
+import useMessage from "../hooks/useMessage";
 
 
 const url = import.meta.env.VITE_API_URL;
@@ -9,6 +10,7 @@ const apiPath = import.meta.env.VITE_API_PATH;
 function Products() {
   const [products, setProducts] = useState([]);
   const [loadingCartId, setLoadingCartId] = useState(null);
+  const {showError , showSuccess} = useMessage();
 
   async function getProducts() {
     try {
@@ -16,6 +18,7 @@ function Products() {
       setProducts(res.data.products);
     } catch (err) {
       console.log(err);
+      showError(err.response.data.message)
     }
   }
   async function addCartItem(product_id, addQty) {
@@ -37,11 +40,11 @@ function Products() {
           qty
         }
       });
-
-      alert('商品已加入購物車');
+      showSuccess('商品已加入購物車')
       console.log('加入購物車成功', response.data);
     } catch (error) {
       console.error('加入購物車失敗', error.response?.data || error);
+      showError(err.response.data.message)
     } finally {
       setLoadingCartId(null)
     }

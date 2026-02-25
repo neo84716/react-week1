@@ -3,6 +3,7 @@ import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import ProductModal from "../../components/ProductModal";
 import Pagination from "../../components/Pagination";
+import useMessage from "../../hooks/useMessage";
 
 const url = import.meta.env.VITE_API_URL;
 const apiPath = import.meta.env.VITE_API_PATH;
@@ -14,6 +15,7 @@ function Products() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const navigate = useNavigate();
   const [pagination, setPagination] = useState({});
+  const {showError , showSuccess} = useMessage();
 
   async function getProducts(page = 1) {
     try {
@@ -22,6 +24,8 @@ function Products() {
       setPagination(res.data.pagination);
     } catch (err) {
       console.log(err);
+      showError(err.response.data.message)
+      
     }
   }
 
@@ -30,10 +34,11 @@ function Products() {
     if (result) {
       try {
         const res = await axios.delete(`${url}/api/${apiPath}/admin/product/${id}`);
-        alert("刪除成功");
+        showSuccess('刪除成功')
         getProducts()
       } catch (err) {
         console.log(err);
+        showError(err.response.data.message)
       }
     }
 
